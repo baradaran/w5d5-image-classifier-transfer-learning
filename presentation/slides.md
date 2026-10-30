@@ -21,7 +21,7 @@ style: |
 Eva & Amir · Flower Classification Project · Week 5
 
 <!--
-Hi, I'm Amir. Eva and I worked on this project together. In the next five minutes I show how a garden centre can pick the right care guide from a customer's photo, with only 100 photos per flower.
+Hi, I'm Amir. Eva and I worked on this project together. In the next five minutes, I'll show you how a garden centre can pick the right care guide from a customer's photo, with only 100 photos per flower.
 -->
 
 ---
@@ -36,7 +36,7 @@ Hi, I'm Amir. Eva and I worked on this project together. In the next five minute
 **Question:** can a model pick the guide, and **when can the garden centre trust it?**
 
 <!--
-Today every photo needs a person. We want a model that takes over the easy cases, and we want to know when it should not be trusted. Only 100 photos per flower is very little data for a neural network.
+At the moment, a member of staff has to look at every single photo. We want a model that takes over the easy cases, and we want to know when the model should not be trusted. And 100 photos per flower is very little data for a neural network.
 -->
 
 ---
@@ -49,8 +49,8 @@ Today every photo needs a person. We want a model that takes over the easy cases
 - **Sunflowers:** yellow, plus blue sky · **Roses and tulips:** almost the same colours → the model must learn **shape**
 
 <!--
-The classes are balanced, so accuracy is a fair metric. The photos are very varied: close-ups, fields, bouquets.
-The colour plot shows: sunflowers are yellow and often photographed against blue sky. Roses and tulips have almost the same colours, red and pink. So for those two the model needs shape, not colour.
+Our three classes are balanced, so accuracy is a fair way to measure the model. The photos themselves are very varied, with close-ups, whole fields and bouquets.
+The colour plot shows that sunflowers are mostly yellow and are often photographed against a blue sky. Roses and tulips, on the other hand, have almost the same colours, mostly red and pink. So to tell those two apart, the model has to learn their shape, not their colour.
 -->
 
 ---
@@ -67,7 +67,7 @@ The colour plot shows: sunflowers are yellow and often photographed against blue
 | **Saturation and brightness** per flower | Roses and tulips almost identical | The model has to learn **shape**: open, layered roses against closed tulip cups |
 
 <!--
-Before modelling, Eva looked at the data more closely. All flowers have the same photo shapes, so resizing them to a square is fair. Colour separates sunflowers, but roses and tulips are almost identical in colour, saturation and brightness. So we expected the model to need shape for these two.
+Before we started modelling, Eva looked at the data more closely. She found that all three flowers have the same photo shapes, so resizing every photo to a square is fair. She also found that colour separates the sunflowers well, but that roses and tulips are almost identical in colour, saturation and brightness. That is why we expected the model to need the shape of the flower for these two.
 -->
 
 ---
@@ -85,7 +85,7 @@ photo  ->  MobileNetV2 base (frozen)  ->  1,280 features  ->  small head  ->  ro
 - **Freeze** the base: protects what it learnt, and only 3,843 weights have to be learnt from our photos
 
 <!--
-Instead of training from scratch, we reuse MobileNetV2. It was trained on 1.4 million ImageNet photos and already detects edges, textures and shapes. We keep that part frozen and only train a small new head for our three flowers: 3,843 weights instead of millions.
+Instead of training a network from scratch, we reused MobileNetV2. It was trained on 1.4 million ImageNet photos, so it already knows how to detect edges, textures and shapes. We kept that part frozen and only trained a small new head for our three flowers. That means only 3,843 weights had to be learnt from our photos, instead of millions.
 -->
 
 ---
@@ -95,10 +95,10 @@ Instead of training from scratch, we reuse MobileNetV2. It was trained on 1.4 mi
 ![w:900](images/what_we_tried.png)
 
 <!--
-Here is every model we trained, on photos they never trained on: light blue is the validation set (60 photos), dark blue the test set (30 photos).
-Chance is 33 percent. A CNN from scratch reaches 63. Every transfer learning model, mine and Eva's, is far above that: 80 to 97 percent.
-Interesting: my model is best on validation, Eva's are best on test. The differences are 1 to 4 photos, so that is noise from small data.
-The next two slides show what each of us tried, and what worked.
+This chart shows every model we trained, measured on photos they never saw during training. The light blue bars are the validation set with 60 photos, and the dark blue bars are the test set with 30 photos.
+Guessing gives 33 percent, and a CNN trained from scratch reaches 63 percent. Every transfer learning model, mine and Eva's, is far above that, between 80 and 97 percent.
+What is interesting is that my model is best on validation, while Eva's models are best on test. But the differences are only one to four photos, so that is just noise from having so little data.
+On the next two slides, I'll show you what each of us tried and what worked.
 -->
 
 ---
@@ -115,8 +115,8 @@ The next two slides show what each of us tried, and what worked.
 | + early stopping | Stop at the lowest validation loss | 0.833 (50) | – | ⚠️ more honest probabilities, 2 photos fewer |
 
 <!--
-My part: I started with a CNN from scratch as a baseline: 63 percent, and it memorised the training photos. Transfer learning with a frozen MobileNetV2 and a small head reached 87 percent on validation, 90 on test.
-Augmentation and early stopping reduced overfitting, but did not get more photos right. So the simple model stayed our choice.
+Let me start with my part. As a baseline, I trained a CNN from scratch. It reached 63 percent and simply memorised the training photos. Transfer learning with a frozen MobileNetV2 and a small head reached 87 percent on validation and 90 percent on test.
+I also tried data augmentation and early stopping. They reduced overfitting, but they did not get more photos right, so the simple model stayed our choice.
 -->
 
 ---
@@ -135,10 +135,10 @@ Augmentation and early stopping reduced overfitting, but did not get more photos
 **The tuner's choice:** no hidden layer, dropout 0.2, a small learning rate, light augmentation: **the simplest head won**, as in our own comparison.
 
 <!--
-Eva trained at 224 x 224, the original MobileNetV2 size, with the base inside the model: 48 of 60 validation photos, 29 of 30 test photos.
-Her augmentation included a vertical flip, which we had decided against. It reduced overfitting, but did not change the accuracy at all, so it neither helped nor hurt.
-Then she let Keras Tuner try 30 settings. The best one has no hidden layer, little dropout and a small learning rate: the simplest head won again. It has the lowest validation loss of all our models, so its probabilities are the most honest.
-Her strong augmentation by hand reached the same accuracy, with a higher loss.
+Eva trained her models at 224 by 224 pixels, which is the original size of MobileNetV2, and she put the base inside the model. Her dense head got 48 of 60 validation photos and 29 of 30 test photos right.
+Her augmentation also included a vertical flip, which I had decided against. It reduced overfitting, but it did not change the accuracy at all, so it neither helped nor hurt.
+Then she let Keras Tuner try 30 different settings. The best one has no hidden layer, little dropout and a small learning rate, so once again the simplest head won. It also has the lowest validation loss of all our models, which means that its probabilities are the most honest.
+Her strong augmentation by hand reached the same accuracy, but with a higher loss.
 -->
 
 ---
@@ -157,9 +157,9 @@ Her strong augmentation by hand reached the same accuracy, with a higher loss.
 **Lesson:** with 300 photos, the **pretrained features do most of the work**. Our model is best on validation, Eva's on test, by **1 to 4 photos**: that is noise, so we choose by validation and keep the simplest model.
 
 <!--
-Summary. Transfer learning is the big win. Augmentation, early stopping and the tuner helped with overfitting and with honest probabilities, but changed the accuracy by only one photo or so. Both our own comparison and Keras Tuner ended up with the simplest head.
-We disagreed about the vertical flip: Eva tried it, and it made no difference. Colour changes we left out on purpose.
-The lesson: with 60 validation and 30 test photos, differences of a few photos are noise, so we choose by validation and keep the simplest model.
+So, what worked and what didn't? Transfer learning is clearly the big win. Augmentation, early stopping and the tuner helped against overfitting and gave more honest probabilities, but they changed the accuracy by only about one photo. Our own comparison and Keras Tuner both ended up with the simplest head.
+Eva and I disagreed about the vertical flip, so she tried it, and it made no difference. We left out colour changes on purpose.
+The lesson is that with 60 validation photos and 30 test photos, a difference of a few photos is just noise. So we choose the model on the validation set and keep the simplest one.
 -->
 
 ---
@@ -177,8 +177,8 @@ The lesson: with 60 validation and 30 test photos, differences of a few photos a
 - All 10 tulips correct · **2 of the 3 mistakes are sunflowers**, not roses vs tulips
 
 <!--
-The test set was used only once, at the very end. 27 of 30 are right.
-Surprise: we expected roses and tulips to be confused, but two of the three mistakes are sunflowers, the class that looked easiest.
+We used the test set only once, at the very end, and the model got 27 of the 30 photos right.
+What surprised us is that we expected roses and tulips to be confused, but two of the three mistakes are actually sunflowers, the class that looked easiest.
 -->
 
 ---
@@ -192,10 +192,9 @@ Surprise: we expected roses and tulips to be confused, but two of the three mist
 - Eva's best model confirms it: its 2 test mistakes (a far-away rose, an orange rose) are at **41 % and 58 %**
 
 <!--
-The three wrong photos have one thing in common: none is a close-up of a single flower.
-And the model is less sure when it is wrong: two of the three mistakes are below 70 percent. So the rule is: below 70 percent, a member of staff checks. On the test set that catches two of three mistakes, and only 2 of 30 photos need a person.
-One confident mistake at 90 percent still slips through.
-Eva's best model shows the same pattern: its two test mistakes, a rose far away in a landscape and an orange rose, come with only 41 and 58 percent, so the staff check would catch both.
+The three wrong photos have one thing in common. None of them is a close-up of a single flower. There is a bouquet, a shop display and a garden photographed from far away.
+The model is also less sure when it is wrong, because two of the three mistakes are below 70 percent. So our rule is that every answer below 70 percent is checked by a member of staff. On the test set, that catches two of the three mistakes, and only 2 of the 30 photos need a person. One confident mistake at 90 percent still slips through.
+Eva's best model shows the same pattern. Its two test mistakes, a rose far away in a landscape and an orange rose, came with only 41 and 58 percent, so the staff check would catch both of them.
 -->
 
 ---
@@ -212,10 +211,11 @@ customer uploads a photo  ->  model
 2. The **rose bouquet** → yellow: *"Not sure (62 %): a tulip or a rose? A member of staff will check"*
 
 <!--
-Switch to the app now: uv run streamlit run app.py, dense_head.keras is selected automatically.
-Upload the clear sunflower: green box.
-Upload the rose bouquet (data/test/rose, first file): yellow box, staff check.
-If the demo fails: show screenshots.
+[Switch to the app. It is already running, and dense_head.keras is selected. Upload data/test/sunflower, the first file.]
+Let me show you the app. First, I upload a clear photo of a sunflower. The model is 96 percent sure, so the care guide would be sent automatically.
+[Upload data/test/rose, the first file.]
+Now I upload a rose bouquet from the test set. This time the model is only 62 percent sure, and it cannot decide between a tulip and a rose. So it asks a member of staff to check the photo, which is exactly the rule from the previous slide.
+[If the demo fails, show the screenshots instead.]
 -->
 
 ---
@@ -230,7 +230,7 @@ If the demo fails: show screenshots.
 **Next:** more photos, fine-tuning the top of MobileNetV2, confirm the 70 % threshold on more data
 
 <!--
-To sum up: transfer learning took us from 63 to 90 percent, and we know when not to trust the model. Thank you, I'm happy to take questions.
+To sum up, transfer learning took us from 63 to 90 percent, and we know when the model should not be trusted. Thank you for listening, and I'm happy to take your questions.
 -->
 
 ---
@@ -254,5 +254,5 @@ To sum up: transfer learning took us from 63 to 90 percent, and we know when not
 | Staff check | Below 70 % | Catches 2 of 3 mistakes on the test set; to confirm on more photos |
 
 <!--
-Only for questions. Every decision with its reason is also in the notebook, section "Methods and Decisions at a Glance".
+This slide is only for questions. Every decision and the reason for it is also in our notebook, in the section Methods and Decisions at a Glance.
 -->
