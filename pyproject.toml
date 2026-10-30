@@ -11,6 +11,11 @@ dependencies = [
     "scikit-learn>=1.9.1",
     "streamlit>=1.66.1",
     "tensorflow>=2.21.0",
+    "certifi>=2026.10.23",
+    "plotly>=7.1.0",
+    "nbformat>=5.11.1",
+    "keras-tuner>=1.4.8",
+    "tensorboard>=2.21.0",
 ]
 
 [dependency-groups]
