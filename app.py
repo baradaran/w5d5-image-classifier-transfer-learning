@@ -19,6 +19,7 @@ import tensorflow as tf
 
 CLASSES = ["rose", "sunflower", "tulip"]  # the folder names, in alphabetical order, as in the training data
 THRESHOLD = 0.7  # below this probability, a member of staff checks the photo (step 6 of the notebook)
+FINAL_MODEL = "dense_head.keras"  # our chosen model (step 5 of the notebook), selected when the app starts
 
 
 @st.cache_resource  # load each model only once, not again every time the page changes
@@ -35,12 +36,14 @@ def prepare_photo(photo_bytes, model):
 
 st.title("Flower Classifier")
 
-model_files = sorted(Path("models").glob("*.keras"))
+model_files = sorted(path for path in Path("models").glob("*.keras") if not path.name.startswith("solution_"))  # only our own models
 if not model_files:
     st.error("No model found in `models/`. Save a model there in step 5 of the notebook first.")
     st.stop()
 
-model_path = st.selectbox("Model", model_files, format_func=lambda path: path.name)
+names = [path.name for path in model_files]
+default = names.index(FINAL_MODEL) if FINAL_MODEL in names else 0  # start with our final model if it exists
+model_path = st.selectbox("Model", model_files, index=default, format_func=lambda path: path.name)
 model = load_model(str(model_path))
 
 photo = st.file_uploader("Upload a photo of a rose, a sunflower or a tulip", type=["jpg", "jpeg", "png"])
@@ -53,7 +56,10 @@ if photo is not None:
 
     first, second = probabilities.argsort()[::-1][:2]  # the two most likely flowers
     if probabilities[first] >= THRESHOLD:
-        st.success(f"This is a {CLASSES[first]} ({probabilities[first]:.0%}). Here is your care guide.")
+        st.success(
+            f"This is a {CLASSES[first]} ({probabilities[first]:.0%}). "
+            f"The website would now send the {CLASSES[first]} care guide automatically."
+        )
     else:
         st.warning(
             f"Not sure ({probabilities[first]:.0%}): a {CLASSES[first]} or a {CLASSES[second]}? "
